@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: ACFS3 - CloudFront with Header Security and site content
+Description: ACFS3 - CloudFront with Header Security and site content, modified Content Security Policy, added cloudfront function to append index.html to URL's that omit it. 
 Transform: 'AWS::Serverless-2016-10-31'
 
 Parameters:
@@ -65,7 +65,7 @@ Resources:
         async function handler(event) {
           const request = event.request;
           const uri = request.uri;
-  
+
           // Check whether the URI is missing a file name.
           if (uri.endsWith('/')) {
               request.uri += 'index.html';
@@ -74,7 +74,7 @@ Resources:
           else if (!uri.includes('.')) {
               request.uri += '/index.html';
           }
-  
+
           return request;
         }
 
