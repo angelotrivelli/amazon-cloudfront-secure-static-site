@@ -48,6 +48,7 @@ Parameters:
     AllowedValues: ['yes', 'no']
 
 Resources:
+
   CustomResourceStack:
     Type: AWS::CloudFormation::Stack
     Properties:

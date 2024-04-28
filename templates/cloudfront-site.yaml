@@ -52,6 +52,33 @@ Resources:
               StringEquals:
                 'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
 
+
+  AppendIndexHtmlFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: "append-index-html"
+      AutoPublish: true
+      FunctionConfig:
+        Comment: "This adds index.html to URL's that omit it. See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/example-function-add-index.html"
+        Runtime: "cloudfront-js-2.0"
+      FunctionCode: |
+        async function handler(event) {
+          const request = event.request;
+          const uri = request.uri;
+  
+          // Check whether the URI is missing a file name.
+          if (uri.endsWith('/')) {
+              request.uri += 'index.html';
+          } 
+          // Check whether the URI is missing a file extension.
+          else if (!uri.includes('.')) {
+              request.uri += '/index.html';
+          }
+  
+          return request;
+        }
+
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -68,6 +95,9 @@ Resources:
           TargetOriginId: !Sub 'S3-${AWS::StackName}-root'
           ViewerProtocolPolicy: 'redirect-to-https'
           ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt AppendIndexHtmlFunction.FunctionARN
         CustomErrorResponses:
           - ErrorCachingMinTTL: 60
             ErrorCode: 404
@@ -151,7 +181,7 @@ Resources:
             Override: true
             Preload: true
           ContentSecurityPolicy:
-            ContentSecurityPolicy: "default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'"
+            ContentSecurityPolicy: "img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css https://fonts.googleapis.com; object-src 'none';"
             Override: true
           ContentTypeOptions:
             Override: true

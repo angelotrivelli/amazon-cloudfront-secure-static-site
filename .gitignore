@@ -14,6 +14,9 @@ packaged.zip
 s-headers.zip
 witch.zip
 
+
+**/www
+
 # dependencies
 **/node_modules
 **/coverage
